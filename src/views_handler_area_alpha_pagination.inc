@@ -479,10 +479,9 @@ class views_handler_area_alpha_pagination extends \views_handler_area {
         $this->alphaPagination->addClasses($this->alphaPagination->getOption('paginate_numeric_divider_class'), $item);
         $items[] = $item;
       }
-      // Unfortunately, the implementation of item_list in D7 core does not
+      // Unfortunately, the implementation of item_list in core does not
       // allow render arrays to be passed as data and requires premature
       // rendering here by passing TRUE.
-      // @todo In D8, pass the render array directly since it can process it.
       elseif ($build = $character->build(TRUE)) {
         $item = ['data' => $build];
 
@@ -518,7 +517,7 @@ class views_handler_area_alpha_pagination extends \views_handler_area {
     // Append the item list to the wrapper.
     $wrapper[] = $item_list;
 
-    return drupal_render($wrapper);
+    return backdrop_render($wrapper);
   }
 
   /**

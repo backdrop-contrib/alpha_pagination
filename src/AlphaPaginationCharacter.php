@@ -85,7 +85,7 @@ class AlphaPaginationCharacter {
       ];
     }
 
-    return $render ? drupal_render($build) : $build;
+    return $render ? backdrop_render($build) : $build;
   }
 
   /**
@@ -99,10 +99,10 @@ class AlphaPaginationCharacter {
    */
   public function buildLink(array $options = []) {
     // Merge in options.
-    $options = drupal_array_merge_deep([
+    $options = backdrop_array_merge_deep([
       'attributes' => [],
       'html' => FALSE,
-      'query' => drupal_get_query_parameters(),
+      'query' => backdrop_get_query_parameters(),
     ], $options);
 
     // Merge in classes.
@@ -123,7 +123,7 @@ class AlphaPaginationCharacter {
       unset($attributes['class']);
 
       // Merge in the attributes.
-      $options['attributes'] = drupal_array_merge_deep($options['attributes'], $attributes);
+      $options['attributes'] = backdrop_array_merge_deep($options['attributes'], $attributes);
     }
 
     // Build link render array.

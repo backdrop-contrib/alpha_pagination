@@ -82,7 +82,7 @@ class views_handler_field_alpha_pagination_group extends \views_handler_field {
     }
 
     // Return just the first character of the value.
-    $value = $alpha_pagination->getValue(!empty($field->last_render_text) ? drupal_ucfirst(substr(strip_tags($field->last_render_text), 0, 1)) : '');
+    $value = $alpha_pagination->getValue(!empty($field->last_render_text) ? backdrop_ucfirst(substr(strip_tags($field->last_render_text), 0, 1)) : '');
     $label = $alpha_pagination->getLabel($value);
 
     // Prepend an anchor if the link path starts with #. Using the "link"

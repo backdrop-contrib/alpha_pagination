@@ -6,28 +6,8 @@
  */
 
 /**
- * Convert "pre_letter_path" option to "paginate_link_path".
+ * Implements hook_update_last_removed().
  */
-function alpha_pagination_update_7201() {
-  alpha_pagination_migrate_option('alpha_pagination', 'pre_letter_path', 'paginate_link_path', function ($value, \views_handler $handler) {
-    // Immediately return if there's no value.
-    if (!$value) {
-      return NULL;
-    }
-
-    // Convert any matching URLs to a token.
-    if ($value === $handler->view->display[$handler->view->current_display]->handler->get_url()) {
-      $value = '[alpha_pagination:path]';
-    }
-
-    // Append a path separator, if necessary.
-    if ($value[0] !== '#') {
-      $value .= '/';
-    }
-
-    // Append the alphanumeric value token.
-    $value .= '[alpha_pagination:value]';
-
-    return $value;
-  });
+function alpha_pagination_update_last_removed() {
+  return 7201;
 }

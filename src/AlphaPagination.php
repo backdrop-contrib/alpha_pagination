@@ -18,25 +18,6 @@ class AlphaPagination {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function __sleep() {
-    $this->_handler = implode(':', [$this->handler->view->name, $this->handler->view->current_display, $this->handler->handler_type, $this->handler->real_field ?: $this->handler->field]);
-    return ['_handler'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __wakeup() {
-    list($name, $display_id, $type, $id) = explode(':', $this->_handler);
-    $view = views_get_view($name);
-    $view->set_display($display_id);
-    $this->handler = $view->display_handler->get_handler($type, $id);
-    unset($this->_handler);
-  }
-
-  /**
    * Add classes to an attributes array from a view option.
    *
    * @param string[]|string $classes
@@ -53,7 +34,7 @@ class AlphaPagination {
     // Sanitize any classes provided for the item list.
     foreach ((array) $classes as $v) {
       foreach (array_filter(explode(' ', $v)) as $vv) {
-        $processed[] = views_clean_css_identifier($vv);
+        $processed[] = backdrop_clean_css_identifier($vv);
       }
     }
 
@@ -81,37 +62,16 @@ class AlphaPagination {
     static $build;
 
     if (!isset($build)) {
-      if (module_exists('token')) {
-        $build = [
-          '#type' => 'container',
-          '#title' => t('Browse available tokens'),
-        ];
-        $build['help'] = [
-          '#theme' => 'token_tree_link',
-          '#token_types' => ['alpha_pagination'],
-          '#global_types' => TRUE,
-          '#dialog' => TRUE,
-        ];
-      }
-      else {
-        $build = [
-          '#type' => 'fieldset',
-          '#title' => 'Available tokens',
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-        ];
-        $items = [];
-        $token_info = alpha_pagination_token_info();
-        foreach ($token_info['tokens'] as $_type => $_tokens) {
-          foreach ($_tokens as $_token => $_data) {
-            $items[] = "[$_type:$_token] - {$_data['description']}";
-          }
-        }
-        $build['help'] = [
-          '#theme' => 'item_list',
-          '#items' => $items,
-        ];
-      }
+      $build = [
+        '#type' => 'container',
+        '#title' => t('Browse available tokens'),
+      ];
+      $build['help'] = [
+        '#theme' => 'token_tree_link',
+        '#token_types' => ['alpha_pagination'],
+        '#global_types' => TRUE,
+        '#dialog' => TRUE,
+      ];
     }
 
     return isset($fieldset) ? ['#fieldset' => $fieldset] + $build : $build;
@@ -173,7 +133,7 @@ class AlphaPagination {
 
     // If the langcode is not explicitly specified, default to global langcode.
     if (!isset($langcode)) {
-      $langcode = $language->language;
+      $langcode = $language->langcode;
     }
 
     // Retrieve alphabets.
@@ -195,7 +155,7 @@ class AlphaPagination {
         $alphabets['ru'] = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ы', 'Э', 'Ю', 'Я'];
 
         // Allow modules and themes to alter alphabets.
-        drupal_alter('alpha_pagination_alphabet', $alphabets, $this);
+        backdrop_alter('alpha_pagination_alphabet', $alphabets, $this);
 
         // Cache the alphabets.
         cache_set($cid, $alphabets);
@@ -371,13 +331,13 @@ class AlphaPagination {
     global $language;
     $this->ensureQuery();
     $data = [
-      'langcode' => $language->language,
+      'langcode' => $language->langcode,
       'view' => $this->handler->view->name,
       'display' => $this->handler->view->current_display,
       'query' => $this->getOption('query') ? md5($this->getOption('query')) : '',
       'options' => $this->handler->options,
     ];
-    return 'alpha_pagination:' .  drupal_hash_base64(serialize($data));
+    return 'alpha_pagination:' .  backdrop_hash_base64(serialize($data));
   }
 
   /**
@@ -457,7 +417,7 @@ class AlphaPagination {
 
           // Extract the "name" field from the entity property info.
           $table_data = views_fetch_data($table);
-          $entity_info = entity_get_property_info($table_data['table']['entity type']);
+          $entity_info = entity_plus_get_property_info($table_data['table']['entity type']);
           $field = isset($entity_info['properties']['name']['schema field']) ? $entity_info['properties']['name']['schema field'] : 'name';
           break;
 
@@ -467,7 +427,7 @@ class AlphaPagination {
 
           // Extract the "title" field from the entity property info.
           $table_data = views_fetch_data($table);
-          $entity_info = entity_get_property_info($table_data['table']['entity type']);
+          $entity_info = entity_plus_get_property_info($table_data['table']['entity type']);
           $field = isset($entity_info['properties']['title']['schema field']) ? $entity_info['properties']['title']['schema field'] : 'title';
           break;
 
@@ -490,7 +450,7 @@ class AlphaPagination {
                           FROM {' . $table . '}
                           WHERE ' . $where . ' IN ( :nids )', [':nids' => $entity_ids]);
       while ($data = $result->fetchObject()) {
-        $prefixes[] = is_numeric($data->prefix) ? $data->prefix : drupal_strtoupper($data->prefix);
+        $prefixes[] = is_numeric($data->prefix) ? $data->prefix : backdrop_strtoupper($data->prefix);
       }
     }
     return array_unique(array_filter($prefixes));
@@ -545,7 +505,7 @@ class AlphaPagination {
 
     // If the langcode is not explicitly specified, default to global langcode.
     if (!isset($langcode)) {
-      $langcode = $language->language;
+      $langcode = $language->langcode;
     }
 
     // Retrieve numbers.
@@ -561,7 +521,7 @@ class AlphaPagination {
         $numbers['en'] = $default;
 
         // Allow modules and themes to alter numbers.
-        drupal_alter('alpha_pagination_numbers', $numbers, $this);
+        backdrop_alter('alpha_pagination_numbers', $numbers, $this);
 
         // Cache the numbers.
         cache_set($cid, $numbers);

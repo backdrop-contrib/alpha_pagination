@@ -6,113 +6,29 @@
  */
 
 /**
- * Implements hook_help().
- *
- * @todo Remove inline styling.
+ * Implements hook_autoload_info().
  */
-function alpha_pagination_help($path, $arg) {
-  $output = NULL;
-  switch ($path) {
-    case 'admin/help#alpha_pagination':
-      $output .= '<h4>' . t('Overview') . '</h4>';
-      $output .= t('The Alpha Pagination for Views module enables you to add an alphabetical menu in the header or footer of a views display.');
-      $output .= '<div style="border-top: 2px solid #f8981d; margin: 15px 0px; width: 100%"></div>';
-      $output .= '<b>' . t('Views Integration and Configuration') . '</b>';
-      $output .= '<ol>';
-      $output .= '<li>' . t('Build a new view of either users, content (nodes), or comments.') . '</li>';
-      $output .= '<li>' . t('Add whatever field you want to use as the basis for the alphabetic grouping (e.g. title, body). You can optionally exclude this field from display if you don\'t want it to appear in the results shown on the page for some reason. You can only choose a field that is a textfield, textarea or a textarea with a summary.') . '</li>';
-      $output .= '<li>' . t('Add either a header or a footer to your view. Select the new item available in the menu of options for Global: Alpha Pagination.') . '</li>';
-      $output .= '<li>' . t('Configure how you want alpha_pagination to work and specify where it should appear:');
-      $output .= '<ol style="list-style-type: lower-alpha;">';
-      $output .= '<li>' . t('set the path to the results view page.') . '</li>';
-      $output .= '<li>' . t('select the field you want to use as the basis for the alphabetic grouping from the options presented in the select list (note: if the field you want to use does not appear, go back and add it to your view and then return to this configuration page to select the field).') . '</li>';
-      $output .= '<li>' . t('add a context that is the same as the field you wish to use as the basis for alphabetic sorting. Be sure to enable Glossary mode and set the character limit to 1. The transform case option on the URL should be set to Upper Case.') . '</li>';
-      $output .= '<li>' . t('by default the alpha pagination will apply to all displays; if you only want the alpha pagination to appear on the current display, use the drop-down menu at the top of the administrative interface to change the setting from "All displays" to "This page (override)".') . '</li>';
-      $output .= '</ol>';
-      $output .= '<li>' . t('An optional sample view is included and can be enabled via the alpha_pagination_example view. The sample relies on the \'article\' default content type. You can create sample content using the devel module or rely on your own data.') . '</li>';
-      $output .= '</ol>';
-      $output .= '<div style="border-top: 2px solid #f8981d; margin: 15px 0px; width: 100%"></div>';
-      $output .= '<h4>' . t('Additional Style Optiona') . '</h4>';
-      $output .= t('In addition, you can specify the CSS style classes around the paginator, the item list and each item whether or not it is active or inactive. This includes the ability to set a class for linked items (as opposed to items to which have no options and therefor no links).') . '<br /><br />';
-      $output .= t('Furthermore, you can add an "ALL" item as well as numeric items and specify their positions in navigation, the label and their respective css class as well.');
-      $output .= '<div style="border-top: 2px solid #f8981d; margin: 15px 0px; padding-top: 15px; width: 100%; font-size: 8pt; line-height: 1.3em;">';
-      $output .= '<img src="/' . drupal_get_path('module', 'alpha_pagination') . '/images/flyingflip-logo.png" width="151" height="50" alt="FlyingFlip Studios" align="right" /><br />';
-      $output .= 'Released 2016 - v7.x-1.x - FlyingFlip Studios, LLC. - Released under GNU GENERAL PUBLIC LICENSE - Version 2, June 1991<br />http://www.flyingflip.com - @flyingflip - @mbagnall17<br clear="right">';
-      $output .= '<style>.item-list, hr { display: none; }</style></div>';
-      break;
-    default:
-      break;
-  }
-  return $output;
+function alpha_pagination_autoload_info() {
+  return array(
+    'AlphaPagination' => 'src/AlphaPagination.php',
+    'AlphaPaginationCharacter' => 'src/AlphaPaginationCharacter.php',
+    'views_handler_area_alpha_pagination' => 'src/views_handler_area_alpha_pagination.inc',
+    'views_handler_field_alpha_pagination_group' => 'src/views_handler_field_alpha_pagination_group.inc',
+  );
 }
 
 /**
- * Implements hook_library().
+ * Implements hook_library_info().
  */
-function alpha_pagination_library() {
+function alpha_pagination_library_info() {
   $libraries['alpha_pagination'] = [
     'title' => 'Views Alpha Pagination',
-    'website' => 'https://www.drupal.org/project/alpha_pagination',
+    'website' => 'https://www.backdropcms.org/project/alpha_pagination',
     'css' => [
-      drupal_get_path('module', 'alpha_pagination') . '/css/alpha_pagination.css' => [],
+      backdrop_get_path('module', 'alpha_pagination') . '/css/alpha_pagination.css' => [],
     ],
   ];
   return $libraries;
-}
-
-/**
- * Migrates an option for a view handler.
- *
- * @param string|string[] $type
- *   The handler type(s) to migrate options for.
- * @param string $from
- *   The old option name.
- * @param $to
- *   The new option name.
- * @param callable $callback
- *   A callback function to process the old value prior to saving the new value.
- */
-function alpha_pagination_migrate_option($type, $from, $to, callable $callback) {
-  alpha_pagination_process_views_handler($type, function (\views_handler $handler) use ($from, $to, $callback) {
-    $old_value = NULL;
-
-    if (isset($handler->options[$from])) {
-      $old_value = $handler->options[$from];
-    }
-
-    $display_id = $handler->view->display[$handler->view->current_display]->id;
-
-    $new_value = $old_value;
-    $new_value = call_user_func_array($callback, [$new_value, $handler]);
-
-    // Indicate whether the view should be saved based on if the value changed.
-    $save = $old_value !== $new_value;
-    if ($save) {
-      // Retrieve the handler item.
-      $type = $handler->handler_type;
-      $id = $handler->real_field ?: $handler->field;
-      $item = $handler->view->get_item($display_id, $type, $id);
-
-      // Set the new value.
-      $item[$to] = $new_value;
-
-      // Remove the old value.
-      unset($item[$from]);
-
-      // Set the item.
-      $handler->view->set_item($display_id, $type, $id, $item);
-
-      // Display notification of conversion.
-      drupal_set_message(t('[@view_name:@display_id] - Converted option "@from" to "@to"', [
-        '@view_name' => $handler->view->name,
-        '@display_id' => $display_id,
-        '@from' => $from,
-        '@to' => $to,
-      ]));
-    }
-
-    return $save;
-  });
 }
 
 /**
@@ -120,107 +36,6 @@ function alpha_pagination_migrate_option($type, $from, $to, callable $callback) 
  */
 function alpha_pagination_node_presave($entity) {
   cache_clear_all('alpha_pagination:*', 'cache', TRUE);
-}
-
-/**
- * Processes a view handler in all view instances.
- *
- * @param string|string[] $type
- *   The handler type(s) to process.
- * @param callable $callback
- *   A callback function to process the handler.
- */
-function alpha_pagination_process_views_handler($type, callable $callback) {
-  $types = (array) $type;
-
-  static $view_object_types;
-  if (!isset($view_object_types)) {
-    module_load_include('inc', 'views', 'includes/view');
-    $view_object_types = views_object_types();
-  }
-
-  /** @var \view $view */
-  $views = [];
-  foreach (views_get_all_views() as $view) {
-    // Initialize displays.
-    $view->init_display();
-
-    /** @var \views_display $display */
-    foreach ($view->display as $display_id => $display) {
-      // Set the "current" display being iterated on.
-      $view->set_display($display_id);
-
-      // Skip if there's no handler (for whatever reason).
-      if (!isset($display->handler)) {
-        continue;
-      }
-
-      // Get all the handlers that match $type.
-      foreach (array_keys($display->display_options) as $type) {
-        if (!in_array($type, array_keys($view_object_types))) {
-          continue;
-        }
-
-        /** @var \views_handler[] $handlers */
-        $handlers = [];
-
-        /** @var \views_handler $handler */
-        foreach ($display->handler->get_handlers($type) as $id => $handler) {
-          if (in_array($handler->field, $types)) {
-            $handlers[$id] = $handler;
-          }
-        }
-
-        foreach ($handlers as $id => $handler) {
-          $save = call_user_func_array($callback, [$handler]);
-          if ($save === TRUE) {
-            $views[$view->name] = $view;
-          }
-        }
-      }
-    }
-  }
-
-  // Save any views.
-  alpha_pagination_save_views($views);
-}
-
-/**
- * Saves a view.
- *
- * @param \view $view
- *   The view object to save.
- */
-function alpha_pagination_save_view(\view $view) {
-  static $features;
-  if (!isset($features)) {
-    $features = module_exists('features') ? features_get_component_map('views_view') : [];
-  }
-
-  // Save the view.
-  $view->save();
-
-  // Notify about any potential features that may need to be manually updated.
-  if ($features && !empty($features[$view->name])) {
-    drupal_set_message(t('The features component "@feature.views_view" contains the view "@view". To ensure this change is persistent, the feature must be re-exported.', [
-      '@feature' => reset($features[$view->name]),
-      '@view' => $view->name,
-    ]), 'warning');
-  }
-}
-
-/**
- * Saves multiple views.
- *
- * @param \view[] $views
- *   An array of view objects to save.
- */
-function alpha_pagination_save_views(array $views = []) {
-  foreach ($views as $view) {
-    if ($view instanceof \view) {
-      alpha_pagination_save_view($view);
-    }
-  }
 }
 
 /**
@@ -271,8 +86,8 @@ function alpha_pagination_tokens($type, $tokens, array $data = [], array $option
  */
 function alpha_pagination_views_api() {
   return [
-    'api' => 2,
-    'path' => drupal_get_path('module', 'alpha_pagination') . '/views',
+    'api' => 3,
+    'path' => backdrop_get_path('module', 'alpha_pagination') . '/views',
   ];
 }
 
