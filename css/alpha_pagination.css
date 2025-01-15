@@ -1,8 +1,6 @@
 .alpha-pagination .item-list > ul {
   display: flex;
   flex-wrap: wrap;
-  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 12px; */
   justify-content: center;
   line-height: 1;
   list-style: none;
@@ -25,7 +23,6 @@
 .alpha-pagination .item-list > ul li span {
   align-items: center;
   border-radius: 3px;
-  color: #0071B3;
   display: inline-flex;
   justify-content: center;
   min-height: 1em;
@@ -43,7 +40,7 @@
 
 .alpha-pagination .item-list > ul li.active a,
 .alpha-pagination .item-list > ul li.active span {
-  background-color: #0071B3;
+  background-color: #666;
   color: #fff;
   cursor: default;
   font-weight: 700;
