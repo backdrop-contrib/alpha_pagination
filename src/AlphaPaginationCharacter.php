@@ -78,8 +78,8 @@ class AlphaPaginationCharacter {
     // themeable element that can be targeted by preprocessors if needed.
     else {
       $build = [
-        '#type' => 'html_tag',
-        '#theme' => 'html_tag__alpha_pagination__inactive',
+        '#type' => 'head_tag',
+        '#theme' => 'head_tag__alpha_pagination__inactive',
         '#tag' => 'span',
         '#value' => $this->getLabel(),
       ];
