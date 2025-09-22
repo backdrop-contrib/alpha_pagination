@@ -89,12 +89,15 @@ class views_handler_field_alpha_pagination_group extends \views_handler_field {
     // element will cause an empty href attribute to be printed. This can cause
     // issues with certain JavaScript or CSS styling that targets if that
     // attribute is simply present, regardless if it's empty. To avoid that,
-    // use the "html_tag" type so only the name attribute is printed.
+    // use the "head_tag" type so only the name attribute is printed.
+    // @todo find a replacement. https://docs.backdropcms.org/change-records/theme_html_tag-becomes-theme_head_tag
+    // Officially, head_tag is only supposed to be used for the header, but there
+    // is no alternative at the moment if we keep the theme function.
     if ($value && $path && $path[0] === '#') {
       $name = token_replace(substr($path, 1), $alpha_pagination->getTokens($value));
       $label = [
-        '#type' => 'html_tag',
-        '#theme' => 'html_tag__alpha_pagination__anchor',
+        '#type' => 'head_tag',
+        '#theme' => 'head_tag__alpha_pagination__anchor',
         '#tag' => 'a',
         '#value' => '',
         '#attributes' => ['name' => $name],
